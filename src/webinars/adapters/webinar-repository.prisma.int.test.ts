@@ -79,4 +79,43 @@ describe('PrismaWebinarRepository', () => {
       });
     });
   });
+
+  describe('Scenario : repository.findById', () => {
+    it('should return a webinar if it exists', async () => {
+      // ARRANGE
+      await prismaClient.webinar.create({
+        data: {
+          id: 'webinar-id',
+          organizerId: 'organizer-id',
+          title: 'Webinar title',
+          startDate: new Date('2022-01-01T00:00:00Z'),
+          endDate: new Date('2022-01-01T01:00:00Z'),
+          seats: 100,
+        },
+      });
+
+      // ACT
+      const maybeWebinar = await repository.findById('webinar-id');
+
+      // ASSERT
+      expect(maybeWebinar).toEqual(
+        new Webinar({
+          id: 'webinar-id',
+          organizerId: 'organizer-id',
+          title: 'Webinar title',
+          startDate: new Date('2022-01-01T00:00:00Z'),
+          endDate: new Date('2022-01-01T01:00:00Z'),
+          seats: 100,
+        }),
+      );
+    });
+
+    it('should return null if the webinar does not exist', async () => {
+      // ACT
+      const maybeWebinar = await repository.findById('missing-webinar-id');
+
+      // ASSERT
+      expect(maybeWebinar).toBeNull();
+    });
+  });
 });
