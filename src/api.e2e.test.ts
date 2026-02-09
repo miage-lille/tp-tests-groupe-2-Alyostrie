@@ -47,4 +47,34 @@ describe('Webinar Routes E2E', () => {
     });
     expect(updatedWebinar?.seats).toBe(30);
   });
+
+  it('should return 404 if webinar not found', async () => {
+    const server = fixture.getServer();
+
+    await supertest(server)
+      .post(`/webinars/non-existing-webinar/seats`)
+      .send({ seats: '30' })
+      .expect(404);
+  });
+
+  it('should return 401 if user is not the organizer', async () => {
+    const prisma = fixture.getPrismaClient();
+    const server = fixture.getServer();
+
+    const webinar = await prisma.webinar.create({
+      data: {
+        id: 'test-webinar-not-organizer',
+        title: 'Webinar Test',
+        seats: 10,
+        startDate: new Date(),
+        endDate: new Date(),
+        organizerId: 'other-user',
+      },
+    });
+
+    await supertest(server)
+      .post(`/webinars/${webinar.id}/seats`)
+      .send({ seats: '30' })
+      .expect(401);
+  });
 });
